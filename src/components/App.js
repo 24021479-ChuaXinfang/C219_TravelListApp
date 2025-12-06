@@ -1,48 +1,54 @@
+import React, { useState } from 'react';
+import Logo from "./Logo";
+import Form from "./Form";
+import PackingList from "./PackingList";
+import Stats from "./Stats";
+
 // Initial packing items
 const initialItems = [
-  { id: 1, description: "Shirt", quantity: 5, packed: false },
-  { id: 2, description: "Pants", quantity: 2, packed: false },
+  { id: Date.now(), description: "Shirt", quantity: 5, packed: false },
+  { id: Date.now(), description: "Pants", quantity: 2, packed: false },
 ];
 
-function Logo() {
-  return <h1>My Travel List</h1>;
-}
-
-function Form() {
-  return (
-    <form className="add-form">
-      <h3>What do you need to pack?</h3>
-    </form>
-  );
-}
-
-function PackingList() {
-  return (
-    <div className="list">
-      <ul>
-        {initialItems.map((item) => (
-          <li>{item.description}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Stats() {
-  return (
-    <footer className="stats">
-      <em>You have X items in the list. You already packed Y (Z%).</em>
-    </footer>
-  );
-}
 
 function App() {
+  const[items, setItems] = useState([]);
+  const[sortCriteria, setSortCriteria] = useState("");
+
+  function handleAddItems(item){
+    setItems((prevItems) => [...prevItems, item]);
+  }
+
+  function handleDeleteItems(id){
+    setItems((prevItems) => prevItems.filter(item => item.id != id));
+  }
+
+  function handleUpdateItem(id){
+    setItems((prevItems) => prevItems.map((item) => item.id === id ? {...item, packed: !item.packed} : item));
+  }
+
+  function handleClearAll(){
+     if (window.confirm("Are you sure you want to clear all items?")) {
+    setItems([]);
+  }
+  }
+
+  function getSortedItems(){
+    if (sortCriteria === "description") {
+      return [...items].sort((a, b) => a.description.localeCompare(b.description));
+    } else if (sortCriteria === "packed") {
+      return [...items].sort((a, b) => b.packed - a.packed);
+    } else {
+      return [...items].sort((a, b) => a.id - b.id);
+    }
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
-      <Stats />
+      <Form handleAddItems={handleAddItems} sortCriteria={sortCriteria} setSortCriteria={setSortCriteria} />
+      <PackingList items={getSortedItems()} handleDeleteItems={handleDeleteItems} handleUpdateItem={handleUpdateItem} />
+      <Stats items={items} handleClearAll={handleClearAll} />
     </div>
   );
 }
